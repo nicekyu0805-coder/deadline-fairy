@@ -1,0 +1,83 @@
+import { NextResponse } from "next/server"
+import { createClient } from "@/lib/supabase-server"
+
+export async function POST(request: Request) {
+    try {
+        const { paymentKey, orderId, amount } = await request.json()
+
+        // 1. 토스페이먼츠 결제 승인 API 호출
+        const secretKey = process.env.TOSS_SECRET_KEY || ""
+        const basicAuth = Buffer.from(`${secretKey}:`).toString("base64")
+
+        const response = await fetch("https://api.tosspayments.com/v1/payments/confirm", {
+            method: "POST",
+            headers: {
+                Authorization: `Basic ${basicAuth}`,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                paymentKey,
+                orderId,
+                amount,
+            }),
+        })
+
+        const result = await response.json()
+
+        if (!response.ok) {
+            console.error("Toss API Error:", result)
+            return NextResponse.json(
+                { message: result.message || "결제 승인 실패" },
+                { status: response.status }
+            )
+        }
+
+        // 2. DB 업데이트 (Supabase)
+        const supabase = await createClient()
+
+        // 현재 로그인한 사용자 정보 가져오기
+        const { data: { user } } = await supabase.auth.getUser()
+
+        if (!user) {
+            return NextResponse.json({ message: "사용자 인증 실패" }, { status: 401 })
+        }
+
+        // 2-1. 프로필 업데이트 (구독 활성화 및 종료일 설정)
+        // 종료일은 현재로부터 30일 뒤로 설정
+        const subscriptionEndAt = new Date()
+        subscriptionEndAt.setDate(subscriptionEndAt.getDate() + 30)
+
+        const { error: profileError } = await supabase
+            .from("profiles")
+            .update({
+                subscription_status: "active",
+                subscription_end_at: subscriptionEndAt.toISOString(),
+            })
+            .eq("id", user.id)
+
+        if (profileError) {
+            console.error("Profile update error:", profileError)
+            // 실제 운영 환경에서는 여기서 보상 트랜잭션(결제 취소) 고려 필요
+        }
+
+        // 2-2. 결제 로그 기록
+        const { error: paymentError } = await supabase
+            .from("payments")
+            .insert({
+                user_id: user.id,
+                amount: amount,
+                currency: "KRW",
+                status: "completed",
+                stripe_payment_intent_id: paymentKey, // 토스의 경우 paymentKey를 저장
+            })
+
+        if (paymentError) {
+            console.error("Payment log error:", paymentError)
+        }
+
+        return NextResponse.json({ success: true, data: result })
+    } catch (error) {
+        console.error("Internal Server Error:", error)
+        return NextResponse.json({ message: "서버 내부 오류" }, { status: 500 })
+    }
+}
