@@ -13,16 +13,17 @@ export default function UserDashboard() {
     const [mode, setMode] = useState<'gentle' | 'ruthless'>('gentle')
     const [status, setStatus] = useState<'idle' | 'submitted' | 'failed' | 'verified'>('idle')
     const [loading, setLoading] = useState(false)
-    const [subscriptionEndAt, setSubscriptionEndAt] = useState<string | null>(null) // 초기에는 null
+    const [subscriptionEndAt, setSubscriptionEndAt] = useState<string | null>(null)
     const [stats, setStats] = useState({
         continuousDays: 0,
         successCount: 0,
         totalRequired: 20
     })
 
+    // 수정 관련 상태
+    const [isEditing, setIsEditing] = useState(false)
+
     useEffect(() => {
-        // 실제로는 여기서 Supabase 데이터를 불러와야 합니다.
-        // 임시로 가입 후 30일 뒤를 종료일로 설정
         const thirtyDaysLater = new Date()
         thirtyDaysLater.setDate(thirtyDaysLater.getDate() + 30)
         setSubscriptionEndAt(thirtyDaysLater.toISOString().split('T')[0])
@@ -39,14 +40,52 @@ export default function UserDashboard() {
 
     const daysLeft = getDaysRemaining(subscriptionEndAt)
 
+    // 수정 가능 여부 체크 로직
+    const checkCanModify = () => {
+        const now = new Date()
+        const [hours, minutes] = deadline.split(':').map(Number)
+        const deadlineDate = new Date()
+        deadlineDate.setHours(hours, minutes, 0, 0)
+
+        // 만약 마감 시간이 이미 지났다면 (오늘 기준)
+        if (deadlineDate < now) {
+            return { allowed: false, reason: "이미 마감 시간이 지났습니다!" }
+        }
+
+        const diffMs = deadlineDate.getTime() - now.getTime()
+        const diffHours = diffMs / (1000 * 60 * 60)
+
+        if (diffHours < 3) {
+            return { allowed: false, reason: "마감 3시간 전부터는 목표를 수정할 수 없습니다. 요정이 지켜보고 있어요! 😈" }
+        }
+
+        return { allowed: true }
+    }
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
+
+        // 자정 체크 (00:00은 허용, 그 이상이나 자정을 넘어가는 시간 형태 체크)
+        // input type="time"은 기본적으로 00:00~23:59까지임. 
+        // 새벽 1시(01:00) 등을 선택하면 논리적으로 '다음날'이 되므로 막아야 함.
+        // 현재 UI 구조상 '오늘 밤'의 마감을 정하는 것이므로 00:00~23:59 범위를 유지.
+
         setLoading(true)
-        // Simulate Supabase submission
         setTimeout(() => {
             setStatus('submitted')
+            setIsEditing(false)
             setLoading(false)
         }, 1000)
+    }
+
+    const handleEditClick = () => {
+        const check = checkCanModify()
+        if (check.allowed) {
+            setIsEditing(true)
+            setStatus('idle')
+        } else {
+            alert(check.reason)
+        }
     }
 
     return (
@@ -102,7 +141,9 @@ export default function UserDashboard() {
                     </div>
                     <p className="text-[10px] font-black uppercase tracking-widest text-accent mb-2">오늘의 요정 한마디</p>
                     <p className="text-sm font-bold italic leading-relaxed relative z-10">
-                        "어제의 실패는 시스템 오류일 뿐입니다. 오늘 다시 재부팅하세요. 마감 요정은 당신의 '오늘'을 다시 지켜보고 있습니다."
+                        {status === 'idle'
+                            ? "목표를 세울 때 마감 시간도 신중하게 정해보세요. 마감 3시간 전부터는 요정이 수정 권한을 뺏어버립니다!"
+                            : "어제의 실패는 시스템 오류일 뿐입니다. 오늘 다시 재부팅하세요. 마감 요정은 당신의 '오늘'을 다시 지켜보고 있습니다."}
                     </p>
                 </div>
             </div>
@@ -126,7 +167,7 @@ export default function UserDashboard() {
                     <div className="grid md:grid-cols-2 gap-8">
                         <div className="space-y-4">
                             <label className="text-sm font-black uppercase tracking-widest text-foreground/40 flex items-center gap-2">
-                                <Clock size={16} /> 마감 시간
+                                <Clock size={16} /> 마감 시간 (밤 12시전까지 가능)
                             </label>
                             <Input
                                 type="time"
@@ -134,6 +175,9 @@ export default function UserDashboard() {
                                 value={deadline}
                                 onChange={(e) => setDeadline(e.target.value)}
                             />
+                            <p className="text-[10px] font-bold text-foreground/40 italic">
+                                * 설정하신 시간 3시간 전부터는 수정이 불가능합니다.
+                            </p>
                         </div>
 
                         <div className="space-y-4">
@@ -165,9 +209,25 @@ export default function UserDashboard() {
                         </div>
                     </div>
 
-                    <Button size="xl" className="w-full" disabled={loading}>
-                        {loading ? "목표 등록 중..." : "목표 확정하기"}
-                    </Button>
+                    <div className="flex gap-4">
+                        {isEditing && (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="xl"
+                                className="flex-1"
+                                onClick={() => {
+                                    setStatus('submitted')
+                                    setIsEditing(false)
+                                }}
+                            >
+                                취소
+                            </Button>
+                        )}
+                        <Button size="xl" className="flex-[2]" disabled={loading}>
+                            {loading ? "목표 등록 중..." : isEditing ? "수정 완료" : "목표 확정하기"}
+                        </Button>
+                    </div>
                 </form>
             ) : (
                 /* Success State / Status Bar */
@@ -183,7 +243,7 @@ export default function UserDashboard() {
                         </div>
 
                         <div className="space-y-2">
-                            <h2 className="text-5xl font-black uppercase tracking-tighter">목표 고정됨.</h2>
+                            <h2 className="text-5xl font-black uppercase tracking-tighter text-glow-accent">목표 고정됨.</h2>
                             <p className="text-foreground/60 font-bold uppercase tracking-widest text-sm">매니저가 당신의 진행 상황을 지켜보고 있습니다...</p>
                         </div>
 
@@ -191,17 +251,28 @@ export default function UserDashboard() {
                             "{goal}"
                         </div>
 
-                        <div className="flex justify-center gap-8 pt-8">
-                            <div className="text-center">
-                                <p className="text-[10px] font-black uppercase tracking-widest text-foreground/40">마감 시각</p>
-                                <p className="text-xl font-black">{deadline}</p>
+                        <div className="flex flex-col items-center gap-6 pt-8">
+                            <div className="flex justify-center gap-12">
+                                <div className="text-center">
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-foreground/40">마감 시각</p>
+                                    <p className="text-xl font-black">{deadline}</p>
+                                </div>
+                                <div className="text-center">
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-foreground/40">리스크 모드</p>
+                                    <p className={cn("text-xl font-black uppercase", mode === 'ruthless' ? "text-red-500" : "text-accent")}>
+                                        {mode === 'ruthless' ? '무자비' : '온건'}
+                                    </p>
+                                </div>
                             </div>
-                            <div className="text-center">
-                                <p className="text-[10px] font-black uppercase tracking-widest text-foreground/40">리스크 모드</p>
-                                <p className={cn("text-xl font-black uppercase", mode === 'ruthless' ? "text-red-500" : "text-accent")}>
-                                    {mode === 'ruthless' ? '무자비' : '온건'}
-                                </p>
-                            </div>
+
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-[10px] font-black tracking-widest opacity-60 hover:opacity-100"
+                                onClick={handleEditClick}
+                            >
+                                목표 수정하기
+                            </Button>
                         </div>
                     </div>
 
@@ -244,7 +315,54 @@ export default function UserDashboard() {
           display: inline-block;
           animation: marquee 30s linear infinite;
         }
+        .text-glow-accent {
+            text-shadow: 0 0 20px rgba(127, 255, 0, 0.3);
+        }
       `}</style>
         </div>
+    )
+}
+
+<div className="grid md:grid-cols-2 gap-8">
+    <div className="border-2 border-border p-8 space-y-4">
+        <h3 className="font-black uppercase tracking-tighter text-xl flex items-center gap-2">
+            <AlertCircle size={20} className="text-accent" /> 인증 방법은?
+        </h3>
+        <p className="text-foreground/60 text-sm leading-relaxed">
+            마감 시간 전까지 매니저가 연락을 드릴 예정입니다. 메시지에 답장으로 작업 결과를 증명할 수 있는 스크린샷이나 링크를 보내주세요.
+        </p>
+    </div>
+
+    <div className="border-2 border-border p-8 space-y-4 opacity-50">
+        <h3 className="font-black uppercase tracking-tighter text-xl flex items-center gap-2">
+            <CheckCircle2 size={20} /> 검증된 결과물
+        </h3>
+        <p className="text-foreground/60 text-sm italic">
+            검증된 증거가 아직 없습니다.
+        </p>
+    </div>
+</div>
+                </div >
+            )}
+
+{/* Psychological Pressure Ticker */ }
+            <div className="fixed bottom-0 left-0 w-full bg-accent text-accent-foreground py-2 overflow-hidden whitespace-nowrap border-t-2 border-black z-50">
+                <div className="inline-block animate-marquee font-black uppercase tracking-[0.2em] text-xs">
+                    매니저가 지켜보고 있습니다 • 마감을 사수하세요 • 목표를 달성하세요 • 실패 시 100% 환불 • 변명은 필요 없습니다 • 더 열심히 일하세요 • 시간이 얼마 남지 않았습니다 •
+                    매니저가 지켜보고 있습니다 • 마감을 사수하세요 • 목표를 달성하세요 • 실패 시 100% 환불 • 변명은 필요 없습니다 • 더 열심히 일하세요 • 시간이 얼마 남지 않았습니다 •
+                </div>
+            </div>
+
+            <style jsx>{`
+        @keyframes marquee {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        .animate-marquee {
+          display: inline-block;
+          animation: marquee 30s linear infinite;
+        }
+      `}</style>
+        </div >
     )
 }
