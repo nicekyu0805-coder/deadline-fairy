@@ -73,7 +73,7 @@ export function PaymentForm({ amount }: { amount: number }) {
     return (
         <div className="space-y-6 animate-in fade-in duration-700">
             <div className="space-y-4">
-                <label className="text-[10px] font-black uppercase tracking-[0.3em] text-accent flex items-center gap-2">
+                <label className="text-[10px] font-black uppercase tracking-[0.3em] text-black flex items-center gap-2">
                     <CreditCard size={14} /> 결제 수단 선택 (Payment Method)
                 </label>
 
