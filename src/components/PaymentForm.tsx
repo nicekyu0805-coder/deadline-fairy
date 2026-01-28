@@ -98,9 +98,9 @@ export function PaymentForm({ amount }: { amount: number }) {
                 )}
             </div>
 
-            <div className="p-4 bg-accent/5 border border-accent/20 flex items-start gap-3">
+            <div className="p-4 bg-accent/5 border border-accent/20 flex items-start gap-3 text-black">
                 <ShieldCheck className="text-accent shrink-0" size={18} />
-                <p className="text-[10px] font-bold text-foreground/60 leading-relaxed uppercase tracking-widest">
+                <p className="text-[10px] font-bold text-black/60 leading-relaxed uppercase tracking-widest">
                     토스페이먼츠의 보안 결제 시스템을 이용합니다. <br />
                     아래 결제하기 버튼을 누르면 최종 결제가 진행됩니다.
                 </p>
