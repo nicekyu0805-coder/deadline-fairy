@@ -12,9 +12,9 @@ export default function CheckoutPage() {
                 </h1>
             </div>
 
-            <div className="w-full max-w-2xl grid md:grid-cols-2 bg-card border-2 border-border relative z-10 shadow-2xl">
+            <div className="w-full max-w-4xl grid md:grid-cols-5 bg-card border-2 border-border relative z-10 shadow-2xl">
                 {/* Order Summary */}
-                <div className="p-10 border-b-2 md:border-b-0 md:border-r-2 border-border space-y-8 bg-black/20">
+                <div className="p-8 md:col-span-2 border-b-2 md:border-b-0 md:border-r-2 border-border space-y-8 bg-black/20">
                     <Link href="/" className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-foreground/40 hover:text-accent transition-colors">
                         <ArrowLeft size={12} /> 뒤로 가기
                     </Link>
@@ -51,7 +51,7 @@ export default function CheckoutPage() {
                 </div>
 
                 {/* Payment Form Area */}
-                <div className="p-10 flex flex-col justify-start overflow-y-auto">
+                <div className="p-4 md:p-8 md:col-span-3 flex flex-col justify-start overflow-y-auto bg-white">
                     <PaymentForm amount={29000} />
                 </div>
             </div>

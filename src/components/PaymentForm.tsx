@@ -90,11 +90,11 @@ export function PaymentForm({ amount }: { amount: number }) {
                         </button>
                     </div>
                 ) : (
-                    <>
-                        <div id="payment-method" className="w-full bg-white rounded-xl overflow-hidden min-h-[400px]" />
+                    <div className="space-y-4">
+                        <div id="payment-method" className="w-full min-h-[300px]" />
                         {/* 2. 이용약관 위젯 영역 */}
-                        <div id="agreement" className="w-full bg-white rounded-xl overflow-hidden mt-4" />
-                    </>
+                        <div id="agreement" className="w-full min-h-[150px]" />
+                    </div>
                 )}
             </div>
 
