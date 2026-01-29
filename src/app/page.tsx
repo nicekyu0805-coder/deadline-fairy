@@ -182,9 +182,9 @@ export default function LandingPage() {
                   "목표 달성 기준: 한 달 최소 20회 성공",
                   "규칙: 1일 1회 성공만 횟수 인정 (중복 불가)",
                   "정산 시점: 가입 30일 후 일괄 정산",
-                  "성공 시 예치금 전액 반환 (Challenge)",
+                  "성공 시 예치금 반환 (Challenge)",
                   "20회 성공 후 실패 시: 다음달 소정의 할인권",
-                  "30일 올킬: 환불 + 명예의 전당 황금 배지",
+                  "30일 올킬: 예치금 반환 + 명예의 전당 황금 배지",
                   "주의: 단 1번이라도 실패 시 반환 불가 (벌칙)"
                 ].map((item, i) => (
                   <li key={i} className="flex items-center gap-3 font-bold">

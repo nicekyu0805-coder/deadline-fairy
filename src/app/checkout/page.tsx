@@ -45,7 +45,7 @@ export default function CheckoutPage() {
                             <p className="text-[10px] font-bold uppercase tracking-widest text-foreground/60">실시간 활성화</p>
                         </div>
                         <p className="text-xs text-foreground/40 leading-relaxed font-medium">
-                            결제 즉시 관리자의 감시가 시작됩니다. 마감을 지키지 못하면 예치금 소멸 정책이 적용됩니다.
+                            결제 즉시 관리자의 감시가 시작됩니다. 마감을 지키지 못하면 예치금 반환 불가 정책이 적용됩니다. 🧚
                         </p>
                     </div>
                 </div>

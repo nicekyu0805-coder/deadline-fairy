@@ -25,8 +25,8 @@ export default function TermsPage() {
                 </section>
 
                 <section className="space-y-4">
-                    <h2 className="text-2xl font-black uppercase tracking-tight text-white italic">3. 목표 달성 및 전액 환불 정책</h2>
-                    <p>마감 요정의 핵심 정책인 '전액 환불'은 다음 조건을 모두 충족할 때 성립합니다:</p>
+                    <h2 className="text-2xl font-black uppercase tracking-tight text-white italic">3. 목표 달성 및 예치금 반환 정책</h2>
+                    <p>마감 요정의 핵심 정책인 '예치금 반환'은 다음 조건을 모두 충족할 때 성립합니다:</p>
                     <ul className="list-disc pl-5 space-y-2">
                         <li>한 달(30일) 기준 총 20회 이상의 일일 목표 달성 인증 완료</li>
                         <li>1일 1회 인증만 성공 횟수로 인정됨</li>
@@ -35,8 +35,8 @@ export default function TermsPage() {
                 </section>
 
                 <section className="space-y-4">
-                    <h2 className="text-2xl font-black uppercase tracking-tight text-white italic">4. 실패 시 벌칙 및 환불 불가 조건</h2>
-                    <p>다음의 경우 이용 금액의 환불이 불가능하며 약정된 벌칙 대상이 될 수 있습니다:</p>
+                    <h2 className="text-2xl font-black uppercase tracking-tight text-white italic">4. 실패 시 벌칙 및 예치금 반환 불가 조건</h2>
+                    <p>다음의 경우 예치금 반환이 불가능하며 약정된 벌칙 대상이 될 수 있습니다:</p>
                     <ul className="list-disc pl-5 space-y-2">
                         <li>챌린지 기간 중 단 한 번이라도 목표 달성에 실패하거나 인증을 누락한 경우</li>
                         <li>허위 인증(무의미한 목표 설정 등)으로 매니저에 의해 반려된 경우</li>
