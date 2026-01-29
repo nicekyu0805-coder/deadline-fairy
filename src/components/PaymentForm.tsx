@@ -12,7 +12,7 @@ export function PaymentForm({ amount }: { amount: number }) {
     const paymentMethodsWidgetRef = useRef<any>(null)
 
     // 심사용 클라이언트 키 (토스 관리자 센터에서 확인 가능)
-    const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY || "test_ck_D5akpGDRR8yp1Z7jM68P87nLMX9E"
+    const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY || "test_ck_D5yaZDR7go7197M0Dga8VDR7go71"
     const customerKey = "df-customer-anonymous" // 비회원 또는 익명 키
 
     useEffect(() => {
@@ -20,6 +20,9 @@ export function PaymentForm({ amount }: { amount: number }) {
 
         const initWidget = async () => {
             try {
+                // 이미 위젯이 초기화되어 있다면 다시 로드하지 않음
+                if (paymentWidgetRef.current) return;
+
                 const paymentWidget = await loadPaymentWidget(clientKey, customerKey)
                 if (!isMounted) return
 
@@ -38,7 +41,7 @@ export function PaymentForm({ amount }: { amount: number }) {
             } catch (error: any) {
                 console.error("Widget initialization failed:", error)
                 if (isMounted) {
-                    setWidgetError("결제 위젯을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.")
+                    setWidgetError("결제 위젯을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요. (Client Key 확인 필요)")
                 }
             }
         }
