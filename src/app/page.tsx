@@ -145,6 +145,48 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* How It Works Section */}
+      <section className="py-24 px-6 border-b-2 border-border bg-black/40">
+        <div className="max-w-6xl mx-auto space-y-16">
+          <div className="text-center space-y-4">
+            <h3 className="text-5xl md:text-7xl font-black uppercase tracking-tighter italic">How IT <span className="text-accent underline">WORKS.</span></h3>
+            <p className="text-foreground/60 text-lg font-bold">마감 요정의 이용 매뉴얼: 3 가지만 기억하세요.</p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-12">
+            {[
+              {
+                step: "01",
+                title: "오전 목표 설정",
+                desc: "매일 오전 05:00 ~ 11:00 사이에 오늘의 마감 목표를 확정하세요. 아침의 의지력이 성공을 결정합니다.",
+                icon: <Zap className="text-accent" size={40} />
+              },
+              {
+                step: "02",
+                title: "실시간 인증",
+                desc: "설정한 마감 시간 전까지 결과물을 인증하세요. AI와 관리자가 실시간으로 당신의 성공을 검증합니다.",
+                icon: <Shield className="text-accent" size={40} />
+              },
+              {
+                step: "03",
+                title: "예치금 반환",
+                desc: "한 달 20회 성공 시, 납부한 예치금은 100% 반환됩니다. 당신의 성취는 공짜가 아닙니다.",
+                icon: <Trophy className="text-accent" size={40} />
+              }
+            ].map((item, i) => (
+              <div key={i} className="relative p-8 border-2 border-border bg-background group hover:border-accent transition-colors">
+                <div className="absolute top-0 right-0 p-4 text-4xl font-black text-white/5 italic group-hover:text-accent/10 transition-colors">
+                  {item.step}
+                </div>
+                <div className="mb-6">{item.icon}</div>
+                <h4 className="text-2xl font-black mb-4 italic">{item.title}</h4>
+                <p className="text-sm text-foreground/60 leading-relaxed font-bold">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Pricing Section */}
       <section className="py-24 px-6">
         <div className="max-w-4xl mx-auto text-center space-y-16">

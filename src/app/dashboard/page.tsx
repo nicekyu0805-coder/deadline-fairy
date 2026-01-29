@@ -22,6 +22,20 @@ export default function UserDashboard() {
 
     // 수정 관련 상태
     const [isEditing, setIsEditing] = useState(false)
+    const [showWelcome, setShowWelcome] = useState(false)
+
+    useEffect(() => {
+        // 첫 진입 시 환영 모달 표시 (실제로는 로컬스토리지나 DB 필드로 관리)
+        const hasSeenWelcome = localStorage.getItem("df_welcome_seen")
+        if (!hasSeenWelcome) {
+            setShowWelcome(true)
+        }
+    }, [])
+
+    const closeWelcome = () => {
+        setShowWelcome(false)
+        localStorage.setItem("df_welcome_seen", "true")
+    }
 
     useEffect(() => {
         const thirtyDaysLater = new Date()
@@ -305,6 +319,57 @@ export default function UserDashboard() {
                     매니저가 지켜보고 있습니다 • 마감을 사수하세요 • 목표를 달성하세요 • 성공 시 예치금 반환 • 변명은 필요 없습니다 • 더 열심히 일하세요 • 시간이 얼마 남지 않았습니다 •
                 </div>
             </div>
+
+            {/* Welcome Onboarding Modal */}
+            {showWelcome && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/95 backdrop-blur-md animate-in fade-in duration-300">
+                    <div className="bg-card border-4 border-accent max-w-2xl w-full p-8 md:p-12 space-y-8 relative overflow-hidden shadow-[0_0_50px_rgba(127,255,0,0.3)] text-white">
+                        {/* Decorative background */}
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-accent/10 blur-3xl -translate-y-1/2 translate-x-1/2" />
+
+                        <div className="space-y-4 relative z-10 text-white">
+                            <div className="inline-flex items-center gap-2 px-3 py-1 bg-accent/10 border border-accent/20 rounded-full text-accent text-xs font-black uppercase tracking-widest">
+                                <Zap size={14} /> Official Onboarding
+                            </div>
+                            <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter italic leading-none text-white">
+                                Welcome <br />
+                                <span className="text-accent underline">Aboard.</span>
+                            </h2>
+                            <p className="text-lg font-bold text-white/80">
+                                당신의 마지막 마감 파트너, 마감 요정에 오신 것을 환영합니다!
+                            </p>
+                        </div>
+
+                        <div className="space-y-6 relative z-10">
+                            <p className="text-xs font-black uppercase tracking-widest text-accent border-b border-accent/20 pb-2">필독 유의사항 (Essential Rules)</p>
+                            <ul className="space-y-4">
+                                {[
+                                    { title: "오전 목표 설정", desc: "매일 11:00 전까지 오늘의 목표를 확정해야 합니다." },
+                                    { title: "인증 방식", desc: "마감 시간 전까지 결과물(스크린샷/링크)을 반드시 제출하세요." },
+                                    { title: "예치금 반환", desc: "한 달 20회 성공 시 예치금은 100% 반환됩니다." },
+                                    { title: "수정 제한", desc: "설정한 마감 3시간 전부터는 목표 수정이 불가능합니다." }
+                                ].map((item, i) => (
+                                    <li key={i} className="flex gap-4 items-start pb-4 border-b border-white/5 last:border-0">
+                                        <div className="w-6 h-6 rounded-full bg-accent/20 text-accent flex items-center justify-center text-[10px] font-black shrink-0">
+                                            {i + 1}
+                                        </div>
+                                        <div className="space-y-1">
+                                            <p className="font-black text-sm uppercase italic text-white">{item.title}</p>
+                                            <p className="text-xs text-white/50 font-medium leading-relaxed">{item.desc}</p>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+
+                        <div className="pt-4 relative z-10 text-black">
+                            <Button size="xl" className="w-full font-black uppercase tracking-tighter italic" onClick={closeWelcome}>
+                                규정을 숙지했습니다. 시작하기
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <style jsx>{`
         @keyframes marquee {
