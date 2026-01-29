@@ -53,7 +53,7 @@ export default function LandingPage() {
 
           <p className="text-xl md:text-2xl text-foreground/60 max-w-2xl mx-auto font-medium">
             프리랜서와 1인 기업가를 위한 무자비한 AI 매니저. <br />
-            <span className="text-white font-bold italic underline decoration-accent decoration-2 underline-offset-4">목표 달성 시 예치금 전액 반환. 실패 시 벌칙 집행.</span>
+            <span className="text-white font-bold italic underline decoration-accent decoration-2 underline-offset-4">목표 달성 시 예치금 반환. 실패 시 벌칙 집행.</span>
           </p>
 
           <div className="pt-8 flex flex-col md:flex-row gap-4 justify-center">
@@ -173,7 +173,7 @@ export default function LandingPage() {
               <div className="space-y-2">
                 <p className="text-xs font-black uppercase tracking-[0.3em] text-accent">Challenge Pass</p>
                 <h4 className="text-6xl font-black">29,000<span className="text-xl text-foreground/40">원/월</span></h4>
-                <p className="text-[10px] font-bold text-accent mt-2 animate-pulse font-black italic">★ 미션 성공 시 29,000원 전액 반환 ★</p>
+                <p className="text-[10px] font-bold text-accent mt-2 animate-pulse font-black italic">★ 미션 성공 시 29,000원 예치금 반환 ★</p>
               </div>
 
               <ul className="text-left space-y-4">
