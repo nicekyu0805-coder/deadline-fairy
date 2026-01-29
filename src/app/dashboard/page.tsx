@@ -301,8 +301,8 @@ export default function UserDashboard() {
             {/* Psychological Pressure Ticker */}
             <div className="fixed bottom-0 left-0 w-full bg-accent text-accent-foreground py-2 overflow-hidden whitespace-nowrap border-t-2 border-black z-50">
                 <div className="inline-block animate-marquee font-black uppercase tracking-[0.2em] text-xs">
-                    매니저가 지켜보고 있습니다 • 마감을 사수하세요 • 목표를 달성하세요 • 실패 시 100% 환불 • 변명은 필요 없습니다 • 더 열심히 일하세요 • 시간이 얼마 남지 않았습니다 •
-                    매니저가 지켜보고 있습니다 • 마감을 사수하세요 • 목표를 달성하세요 • 실패 시 100% 환불 • 변명은 필요 없습니다 • 더 열심히 일하세요 • 시간이 얼마 남지 않았습니다 •
+                    매니저가 지켜보고 있습니다 • 마감을 사수하세요 • 목표를 달성하세요 • 성공 시 예치금 반환 • 변명은 필요 없습니다 • 더 열심히 일하세요 • 시간이 얼마 남지 않았습니다 •
+                    매니저가 지켜보고 있습니다 • 마감을 사수하세요 • 목표를 달성하세요 • 성공 시 예치금 반환 • 변명은 필요 없습니다 • 더 열심히 일하세요 • 시간이 얼마 남지 않았습니다 •
                 </div>
             </div>
 

@@ -53,7 +53,7 @@ export default function LandingPage() {
 
           <p className="text-xl md:text-2xl text-foreground/60 max-w-2xl mx-auto font-medium">
             프리랜서와 1인 기업가를 위한 무자비한 AI 매니저. <br />
-            <span className="text-white font-bold italic underline decoration-accent decoration-2 underline-offset-4">목표 달성 시 100% 전액 환불. 실패 시 벌칙 집행.</span>
+            <span className="text-white font-bold italic underline decoration-accent decoration-2 underline-offset-4">목표 달성 시 예치금 전액 반환. 실패 시 벌칙 집행.</span>
           </p>
 
           <div className="pt-8 flex flex-col md:flex-row gap-4 justify-center">
@@ -173,7 +173,7 @@ export default function LandingPage() {
               <div className="space-y-2">
                 <p className="text-xs font-black uppercase tracking-[0.3em] text-accent">Challenge Pass</p>
                 <h4 className="text-6xl font-black">29,000<span className="text-xl text-foreground/40">원/월</span></h4>
-                <p className="text-[10px] font-bold text-accent mt-2 animate-pulse font-black italic">★ 목표 달성 시 29,000원 전액 환불 ★</p>
+                <p className="text-[10px] font-bold text-accent mt-2 animate-pulse font-black italic">★ 미션 성공 시 29,000원 전액 반환 ★</p>
               </div>
 
               <ul className="text-left space-y-4">
@@ -182,10 +182,10 @@ export default function LandingPage() {
                   "목표 달성 기준: 한 달 최소 20회 성공",
                   "규칙: 1일 1회 성공만 횟수 인정 (중복 불가)",
                   "정산 시점: 가입 30일 후 일괄 정산",
-                  "성공 시 100% 전액 환불 (Challenge)",
+                  "성공 시 예치금 전액 반환 (Challenge)",
                   "20회 성공 후 실패 시: 다음달 소정의 할인권",
                   "30일 올킬: 환불 + 명예의 전당 황금 배지",
-                  "주의: 단 1번이라도 실패 시 환불 불가 (벌칙)"
+                  "주의: 단 1번이라도 실패 시 반환 불가 (벌칙)"
                 ].map((item, i) => (
                   <li key={i} className="flex items-center gap-3 font-bold">
                     <Check className={cn("text-accent", item.includes("베스트 후기") && "text-yellow-500")} size={20} />
