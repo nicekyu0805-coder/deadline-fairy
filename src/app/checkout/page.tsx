@@ -1,8 +1,39 @@
 import { PaymentForm } from "@/components/PaymentForm"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, Zap } from "lucide-react"
 import Link from "next/link"
+import { Button } from "@/components/Button"
+import { createClient } from "@/lib/supabase-server"
+import { redirect } from "next/navigation"
 
-export default function CheckoutPage() {
+export default async function CheckoutPage() {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+        return (
+            <div className="flex-1 bg-background flex flex-col items-center justify-center p-6 text-center space-y-8">
+                <div className="w-24 h-24 rounded-full bg-accent/10 flex items-center justify-center text-accent">
+                    <Zap size={48} />
+                </div>
+                <div className="space-y-4 max-w-md">
+                    <h1 className="text-4xl font-black uppercase tracking-tighter italic">Login Required.</h1>
+                    <p className="text-lg font-medium text-foreground/70 leading-relaxed">
+                        결제를 진행하시려면 먼저 로그인이 필요합니다. <br />
+                        로그인 후 마감 요정의 감시를 시작해 보세요!
+                    </p>
+                </div>
+                <div className="flex flex-col w-full max-w-xs gap-4">
+                    <Link href="/auth">
+                        <Button size="xl" className="w-full">로그인하러 가기</Button>
+                    </Link>
+                    <Link href="/" className="text-xs font-black uppercase tracking-widest text-foreground/40 hover:text-accent transition-colors">
+                        홈으로 돌아가기
+                    </Link>
+                </div>
+            </div>
+        )
+    }
+
     return (
         <div className="flex-1 bg-background flex flex-col items-center justify-center p-6 relative overflow-hidden">
             {/* Background Decor */}

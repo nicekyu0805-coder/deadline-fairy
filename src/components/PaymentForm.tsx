@@ -29,7 +29,11 @@ export function PaymentForm({ amount }: { amount: number }) {
                 // 결제 수단 위젯 렌더링
                 const paymentMethodsWidget = paymentWidget.renderPaymentMethods(
                     "#payment-method",
-                    { value: amount },
+                    { 
+                        value: amount,
+                        currency: "KRW",
+                        country: "KR"
+                    },
                     { variantKey: "DEFAULT" }
                 )
 
@@ -56,12 +60,13 @@ export function PaymentForm({ amount }: { amount: number }) {
 
         setLoading(true)
         try {
-            const orderId = `df-${Date.now()}`
+            // orderId는 영문 대소문자, 숫자, 특수문자 -, _로 이루어진 6자 이상 64자 이하의 문자열이어야 합니다.
+            const orderId = `df-${Math.random().toString(36).substring(2, 11)}`
 
             await paymentWidget.requestPayment({
                 orderId: orderId,
                 orderName: "마감 요정 월간 패스",
-                customerName: "마감요정회원",
+                customerName: "마감요정 사용자",
                 customerEmail: "user@example.com",
                 successUrl: `${window.location.origin}/payment/success`,
                 failUrl: `${window.location.origin}/payment/fail`,

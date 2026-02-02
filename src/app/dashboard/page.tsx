@@ -4,7 +4,8 @@ import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase"
 import { Button } from "@/components/Button"
 import { Input } from "@/components/Input"
-import { Zap, Clock, ShieldAlert, CheckCircle2, AlertCircle } from "lucide-react"
+import Link from "next/link"
+import { Zap, Clock, ShieldAlert, CheckCircle2, AlertCircle, ShieldCheck, XCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 export default function UserDashboard() {
@@ -23,6 +24,7 @@ export default function UserDashboard() {
     // 수정 관련 상태
     const [isEditing, setIsEditing] = useState(false)
     const [showWelcome, setShowWelcome] = useState(false)
+    const [showVerificationGuide, setShowVerificationGuide] = useState(false)
 
     useEffect(() => {
         // 첫 진입 시 환영 모달 표시 (실제로는 로컬스토리지나 DB 필드로 관리)
@@ -86,10 +88,18 @@ export default function UserDashboard() {
 
         setLoading(true)
         setTimeout(() => {
-            setStatus('submitted')
-            setIsEditing(false)
+            // 바로 제출 완료로 가지 않고 가이드 모달을 띄움
+            setShowVerificationGuide(true)
             setLoading(false)
         }, 1000)
+    }
+
+    const confirmGoalWithGuide = () => {
+        setStatus('submitted')
+        setIsEditing(false)
+        setShowVerificationGuide(false)
+        // 화면 최상단으로 이동
+        window.scrollTo(0, 0)
     }
 
     const handleEditClick = () => {
@@ -111,18 +121,25 @@ export default function UserDashboard() {
                     <h1 className="text-4xl font-black uppercase tracking-tighter">내 대시보드</h1>
                 </div>
                 <div className="flex items-end gap-6">
-                    {daysLeft !== null && (
-                        <div className={cn(
-                            "text-right space-y-1 px-4 py-2 border-l-2",
-                            daysLeft <= 3 ? "border-red-600 animate-pulse" : "border-border"
-                        )}>
-                            <p className="text-[10px] font-black uppercase tracking-widest opacity-40">챌린지 종료까지</p>
-                            <p className={cn("text-2xl font-black tabular-nums", daysLeft <= 3 ? "text-red-500" : "text-foreground")}>
-                                D-{daysLeft}
-                            </p>
-                        </div>
-                    )}
-                    <div className="text-right space-y-1">
+                    <div className="space-y-2 flex flex-col items-end">
+                        <Link href="/checkout">
+                            <Button size="sm" className="bg-accent/10 border-2 border-accent text-accent hover:bg-accent hover:text-accent-foreground font-black uppercase tracking-tighter italic text-[10px]">
+                                정식 구독 결제하기
+                            </Button>
+                        </Link>
+                        {daysLeft !== null && (
+                            <div className={cn(
+                                "text-right space-y-1 px-4 py-2 border-l-2",
+                                daysLeft <= 3 ? "border-red-600 animate-pulse" : "border-border"
+                            )}>
+                                <p className="text-[10px] font-black uppercase tracking-widest opacity-40">챌린지 종료까지</p>
+                                <p className={cn("text-2xl font-black tabular-nums", daysLeft <= 3 ? "text-red-500" : "text-foreground")}>
+                                    D-{daysLeft}
+                                </p>
+                            </div>
+                        )}
+                    </div>
+                    <div className="text-right space-y-1 pb-2">
                         <p className="text-xs font-bold uppercase tracking-widest text-foreground/40">연속 달성일</p>
                         <p className="text-2xl font-black text-accent">{stats.continuousDays}일</p>
                     </div>
@@ -157,7 +174,7 @@ export default function UserDashboard() {
                     <p className="text-sm font-bold italic leading-relaxed relative z-10">
                         {status === 'idle'
                             ? "목표를 세울 때 마감 시간도 신중하게 정해보세요. 마감 3시간 전부터는 요정이 수정 권한을 뺏어버립니다!"
-                            : "어제의 실패는 시스템 오류일 뿐입니다. 오늘 다시 재부팅하세요. 마감 요정은 당신의 '오늘'을 다시 지켜보고 있습니다."}
+                            : "어제의 실패는 시스템 오류일 뿐입니다. 오늘 다시 재부팅하세요. 마감 요정은 당신의 &apos;오늘&apos;을 다시 지켜보고 있습니다."}
                     </p>
                 </div>
             </div>
@@ -262,7 +279,7 @@ export default function UserDashboard() {
                         </div>
 
                         <div className="max-w-xl mx-auto p-6 border-2 border-accent/20 bg-background text-2xl font-bold italic">
-                            "{goal}"
+                            &quot;{goal}&quot;
                         </div>
 
                         <div className="flex flex-col items-center gap-6 pt-8">
@@ -346,7 +363,7 @@ export default function UserDashboard() {
                                 {[
                                     { title: "오전 목표 설정", desc: "매일 11:00 전까지 오늘의 목표를 확정해야 합니다." },
                                     { title: "인증 방식", desc: "마감 시간 전까지 결과물(스크린샷/링크)을 반드시 제출하세요." },
-                                    { title: "예치금 반환", desc: "한 달 20회 성공 시 예치금은 100% 반환됩니다." },
+                                    { title: "예치금 반환", desc: "한 달 20회 성공 시 예치금은 전액 반환됩니다." },
                                     { title: "수정 제한", desc: "설정한 마감 3시간 전부터는 목표 수정이 불가능합니다." }
                                 ].map((item, i) => (
                                     <li key={i} className="flex gap-4 items-start pb-4 border-b border-white/5 last:border-0">
@@ -366,6 +383,78 @@ export default function UserDashboard() {
                             <Button size="xl" className="w-full font-black uppercase tracking-tighter italic" onClick={closeWelcome}>
                                 규정을 숙지했습니다. 시작하기
                             </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Verification Guide Modal (Show after goal submission) */}
+            {showVerificationGuide && (
+                <div className="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-black/95 backdrop-blur-md animate-in zoom-in-95 duration-300">
+                    <div className="bg-card border-4 border-accent max-w-2xl w-full p-8 md:p-12 space-y-8 relative overflow-hidden shadow-[0_0_80px_rgba(var(--accent-rgb),0.4)]">
+                        <div className="space-y-4 relative z-10">
+                            <div className="inline-flex items-center gap-2 px-3 py-1 bg-accent/10 border border-accent/20 rounded-full text-accent text-xs font-black uppercase tracking-widest">
+                                <ShieldCheck size={14} /> Critical Verification Standard
+                            </div>
+                            <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tighter italic leading-none text-white">
+                                <span className="text-accent underline">무자비한</span> 인증 <br />
+                                가이드라인.
+                            </h2>
+                            <p className="text-lg font-bold text-white/80 font-sans">
+                                요정은 거짓말을 가장 싫어합니다. 아래 기준을 지키지 않을 시 즉시 반려 및 벌칙이 집행됩니다.
+                            </p>
+                        </div>
+
+                        <div className="space-y-6 relative z-10 max-h-[40vh] overflow-y-auto pr-4 custom-scrollbar">
+                            <div className="grid gap-6">
+                                {[
+                                    {
+                                        icon: <Zap size={20} />,
+                                        title: "운동 (Physical)",
+                                        desc: "운동 앱의 칼로리/시간/GPS 경로 스크린샷 필수. 단순 기구 사진은 무효."
+                                    },
+                                    {
+                                        icon: <CheckCircle2 size={20} />,
+                                        title: "독서 및 공부 (Intellectual)",
+                                        desc: "마지막 페이지 사진 + 오늘 배운 점 3줄 요약 필수. 책 표지만 보내면 반려."
+                                    },
+                                    {
+                                        icon: <ShieldAlert size={20} />,
+                                        title: "업무 및 자기계발 (Creative)",
+                                        desc: "작업 화면 스크린샷(시계 포함) 또는 결과물 링크 필수."
+                                    }
+                                ].map((item, i) => (
+                                    <div key={i} className="flex gap-4 p-4 border-2 border-white/5 bg-white/5">
+                                        <div className="text-accent shrink-0">{item.icon}</div>
+                                        <div className="space-y-1">
+                                            <p className="font-black text-sm uppercase text-white">{item.title}</p>
+                                            <p className="text-xs text-white/60 font-medium leading-relaxed">{item.desc}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="p-4 bg-red-600/10 border-2 border-red-600/30 text-red-500 space-y-2">
+                                <p className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+                                    <AlertCircle size={14} /> Warning from the Fairy
+                                </p>
+                                <p className="text-xs font-bold leading-relaxed font-sans">
+                                    사장님(매니저)이 인증을 보고 찜찜함을 느낀다면 즉시 반려 처리됩니다.
+                                    의심스러울 땐 증거를 더 보강해서 제출하세요.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="pt-4 relative z-10 flex flex-col gap-4">
+                            <Button size="xl" className="w-full font-black uppercase tracking-tighter" onClick={confirmGoalWithGuide}>
+                                규정을 숙지했습니다. 목표 확정
+                            </Button>
+                            <button
+                                onClick={() => setShowVerificationGuide(false)}
+                                className="text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-opacity text-center mt-2 font-sans"
+                            >
+                                수정한 뒤 다시 등록하기
+                            </button>
                         </div>
                     </div>
                 </div>

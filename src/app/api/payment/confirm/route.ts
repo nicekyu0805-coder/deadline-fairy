@@ -39,7 +39,10 @@ export async function POST(request: Request) {
         const { data: { user } } = await supabase.auth.getUser()
 
         if (!user) {
-            return NextResponse.json({ message: "사용자 인증 실패" }, { status: 401 })
+            return NextResponse.json(
+                { message: "로그인 정보가 없습니다. 로그인 세션이 만료되었거나 로그인이 되어 있지 않습니다. 다시 로그인해 주세요." },
+                { status: 401 }
+            )
         }
 
         // 2-1. 프로필 업데이트 (구독 활성화 및 종료일 설정)
