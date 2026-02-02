@@ -163,7 +163,7 @@ export default function UserDashboard() {
                         />
                     </div>
                     <p className="text-[10px] font-bold text-foreground/40 uppercase tracking-tight">
-                        * 20회 달성 시 다음 달 30% 할인권 지급 | 현재 6회 남음
+                        * 20회 달성 시 다음 달 30% 할인권 지급 | 현재 {stats.totalRequired - stats.successCount}회 남음
                     </p>
                 </div>
                 <div className="border-2 border-accent/20 p-6 bg-accent/5 flex flex-col justify-center relative group overflow-hidden">
