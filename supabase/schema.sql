@@ -58,41 +58,73 @@ create table messages (
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
--- RLS (Row Level Security)
-alter table profiles enable row level security;
-alter table goals enable row level security;
-alter table messages enable row level security;
-
--- Profiles: Users can view their own profile, admins can view all
-create policy "Users can view own profile" on profiles for select using (auth.uid() = id);
-create policy "Admins can view all profiles" on profiles for select using (
-  exists (select 1 from profiles where id = auth.uid() and is_admin = true)
-);
-
--- Goals: Users can view/create own goals, admins can view/update all
-create policy "Users can view own goals" on goals for select using (auth.uid() = user_id);
-create policy "Users can create own goals" on goals for insert with check (auth.uid() = user_id);
-create policy "Admins can manage all goals" on goals for all using (
-  exists (select 1 from profiles where id = auth.uid() and is_admin = true)
-);
-
--- Messages: Users can view messages sent to them, admins can view all
-create policy "Users can view own messages" on messages for select using (auth.uid() = user_id);
-create policy "Admins can manage all messages" on messages for all using (
-  exists (select 1 from profiles where id = auth.uid() and is_admin = true)
-);
--- Page views tracking table
+-- 8. 페이지 뷰 통계 테이블
 create table public.page_views (
   id uuid default gen_random_uuid() primary key,
   page_path text not null,
   referrer text,
-  ip_hash text, -- Privacy-friendly way to count unique visitors
+  ip_hash text, -- Privacy-friendly unique visitor count
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
--- RLS for page_views
+-- 61. RLS (Row Level Security) 활성화
+alter table public.profiles enable row level security;
+alter table public.goals enable row level security;
+alter table public.messages enable row level security;
+alter table public.payments enable row level security;
 alter table public.page_views enable row level security;
-create policy "Anyone can insert page views" on public.page_views for insert with check (true);
-create policy "Admins can view all page views" on public.page_views for select using (
-  exists (select 1 from public.profiles where id = auth.uid() and is_admin = true)
-);
+
+-- 62. Profiles 보안 정책
+create policy "사용자는 자신의 프로필만 조회 가능" on public.profiles
+  for select using (auth.uid() = id);
+
+create policy "사용자는 자신의 프로필만 수정 가능" on public.profiles
+  for update using (auth.uid() = id);
+
+create policy "관리자는 모든 프로필 조회 가능" on public.profiles
+  for select using (
+    (select is_admin from public.profiles where id = auth.uid()) = true
+  );
+
+-- 63. Goals 보안 정책
+create policy "사용자는 자신의 목표만 조회 가능" on public.goals
+  for select using (auth.uid() = user_id);
+
+create policy "사용자는 자신의 목표만 생성 가능" on public.goals
+  for insert with check (auth.uid() = user_id);
+
+create policy "사용자는 자신의 목표만 수정 가능" on public.goals
+  for update using (auth.uid() = user_id);
+
+create policy "관리자는 모든 목표 관리 가능" on public.goals
+  for all using (
+    (select is_admin from public.profiles where id = auth.uid()) = true
+  );
+
+-- 64. Messages 보안 정책
+create policy "사용자는 자신과 관련된 메시지만 조회 가능" on public.messages
+  for select using (auth.uid() = user_id);
+
+create policy "관리자는 모든 메시지 관리 가능" on public.messages
+  for all using (
+    (select is_admin from public.profiles where id = auth.uid()) = true
+  );
+
+-- 65. Payments 보안 정책
+create policy "사용자는 자신의 결제 내역만 조회 가능" on public.payments
+  for select using (auth.uid() = user_id);
+
+create policy "관리자는 모든 결제 내역 관리 가능" on public.payments
+  for all using (
+    (select is_admin from public.profiles where id = auth.uid()) = true
+  );
+
+-- 66. Page Views 보안 정책
+create policy "누구나 페이지 뷰 기록 가능" on public.page_views
+  for insert with check (true);
+
+create policy "관리자만 페이지 뷰 통계 조회 가능" on public.page_views
+  for select using (
+    (select is_admin from public.profiles where id = auth.uid()) = true
+  );
+  );

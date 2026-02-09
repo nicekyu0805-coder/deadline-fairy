@@ -93,7 +93,7 @@ export default function LandingPage() {
               }
             ].map((t, i) => (
               <div key={i} className="p-8 border-2 border-border bg-background space-y-6">
-                <p className="text-lg font-medium leading-relaxed">"{t.text}"</p>
+                <p className="text-lg font-medium leading-relaxed">&quot;{t.text}&quot;</p>
                 <div>
                   <p className="font-bold text-accent">{t.author}</p>
                   <p className="text-xs font-bold uppercase tracking-widest text-foreground/40">{t.role}</p>
@@ -125,6 +125,7 @@ export default function LandingPage() {
               { name: "UX마스터 박", period: "대규모 프로젝트 완수", img: "https://api.dicebear.com/7.x/avataaars/svg?seed=P" },
             ].map((fame, i) => (
               <div key={i} className="group relative aspect-square border-2 border-border bg-card overflow-hidden transition-all hover:border-yellow-500">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={fame.img} alt={fame.name} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-80" />
                 <div className="absolute bottom-4 left-4 right-4">
@@ -140,7 +141,7 @@ export default function LandingPage() {
             ))}
           </div>
           <div className="text-center italic text-foreground/40 text-sm font-bold">
-            "당신도 전설이 될 수 있습니다. 지금 도전하세요."
+            &quot;당신도 전설이 될 수 있습니다. 지금 도전하세요.&quot;
           </div>
         </div>
       </section>
@@ -170,7 +171,7 @@ export default function LandingPage() {
               {
                 step: "03",
                 title: "예치금 반환",
-                desc: "한 달 20회 성공 시, 납부한 예치금은 100% 반환됩니다. 당신의 성취는 공짜가 아닙니다.",
+                desc: "한 달 20회 성공 시, 납부한 예치금은 전액 반환됩니다. 당신의 성취는 공짜가 아닙니다.",
                 icon: <Trophy className="text-accent" size={40} />
               }
             ].map((item, i) => (
@@ -255,7 +256,7 @@ export default function LandingPage() {
               <p>상호: 마감 요정 (DEADLINE FAIRY)</p>
               <p>대표자명: 이광규</p>
               <p>사업자등록번호: 484-25-02247</p>
-              <p>통신판매업신고: 2026-경북울진-0000 (신고 예정)</p>
+              <p>통신판매업신고: 제 2026-경북울진-0013 호</p>
               <p>주소: 경상북도 울진군 평해읍 평해5길 61-4 (황토방빌라) 302호</p>
               <p>고객센터: 070-8064-0475 | nicekyu0805@gmail.com</p>
               <p className="mt-4">© 2026 DEADLINE FAIRY. ALL RIGHTS RESERVED.</p>

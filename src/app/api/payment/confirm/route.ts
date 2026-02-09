@@ -50,20 +50,42 @@ export async function POST(request: Request) {
         const subscriptionEndAt = new Date()
         subscriptionEndAt.setDate(subscriptionEndAt.getDate() + 30)
 
-        const { error: profileError } = await supabase
+        const { data: profileData, error: profileError } = await supabase
             .from("profiles")
             .update({
                 subscription_status: "active",
                 subscription_end_at: subscriptionEndAt.toISOString(),
             })
             .eq("id", user.id)
+            .select()
+            .single()
 
         if (profileError) {
             console.error("Profile update error:", profileError)
-            // 실제 운영 환경에서는 여기서 보상 트랜잭션(결제 취소) 고려 필요
         }
 
-        // 2-2. 결제 로그 기록
+        // 2-2. 알림 문자 발송 (Solapi)
+        const { sendSMS } = await import("@/lib/solapi")
+        const userPhone = profileData?.phone || user.user_metadata?.phone
+        const adminPhone = process.env.ADMIN_PHONE_NUMBER
+
+        // 유저 알림
+        if (userPhone) {
+            await sendSMS({
+                to: userPhone,
+                text: `[마감요정] 결제가 완료되었습니다! 이제부터 요정의 집중 감시가 시작됩니다. 오늘부터 마감을 반드시 사수하세요! 🧚‍♀️`
+            })
+        }
+
+        // 사장님 알림 (관리자 보고)
+        if (adminPhone) {
+            await sendSMS({
+                to: adminPhone,
+                text: `[관리자보고] 새로운 결제 발생!\n구매자: ${profileData?.full_name || user.email}\n금액: ${amount.toLocaleString()}원\n구독이 활성화되었습니다. 🔥`
+            })
+        }
+
+        // 2-3. 결제 로그 기록
         const { error: paymentError } = await supabase
             .from("payments")
             .insert({

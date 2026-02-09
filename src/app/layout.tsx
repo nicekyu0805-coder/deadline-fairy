@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ChannelTalk } from "@/components/ChannelTalk";
+import { LiveTicker } from "@/components/LiveTicker";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -33,6 +34,7 @@ export default function RootLayout({
       <body
         className={`${inter.variable} font-sans antialiased`}
       >
+        <LiveTicker />
         <ChannelTalk />
         <main className="min-h-screen flex flex-col">
           {children}

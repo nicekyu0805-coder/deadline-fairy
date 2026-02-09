@@ -56,7 +56,7 @@ export default function SignUpForm() {
                         <Button className="w-full">로그인하러 가기</Button>
                     </Link>
                     <p className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest leading-relaxed">
-                        로그인 시 "Email not confirmed" 에러가 발생한다면 <br />
+                        로그인 시 &quot;Email not confirmed&quot; 에러가 발생한다면 <br />
                         메일함을 확인해 주세요.
                     </p>
                 </div>

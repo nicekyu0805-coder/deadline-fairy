@@ -57,7 +57,7 @@ export default function RefundPage() {
             </div>
 
             <footer className="pt-12 border-t border-border text-[10px] font-bold uppercase tracking-widest text-foreground/40 text-center">
-                Last Updated: 2026. 01. 27.
+                Last Updated: 2026. 01. 30.
             </footer>
         </div>
     )

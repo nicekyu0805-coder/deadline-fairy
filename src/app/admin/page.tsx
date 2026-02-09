@@ -9,6 +9,7 @@ import {
     CheckCircle,
     XCircle,
     Clock,
+    Zap,
     ExternalLink,
     MessageCircle,
     MoreVertical,
@@ -18,7 +19,8 @@ import {
     Sparkles,
     Calendar,
     ThumbsUp,
-    ThumbsDown
+    ThumbsDown,
+    Sunrise
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { createClient } from "@/lib/supabase"
@@ -28,6 +30,8 @@ const DUMMY_USERS = [
     { id: '1', name: '김철수', phone: '010-1234-5678', goal: '오늘 저녁 6시까지 홈페이지 디자인 시안 3개 완성하기', deadline: '18:00', status: 'in-progress', mode: 'ruthless', subscription_status: 'active', subscription_end_at: '2026-02-23' },
     { id: '2', name: '이영희', phone: '010-9876-5432', goal: '오후 4시까지 운동 1시간 완료 인증샷 보내기', deadline: '16:00', status: 'pending', mode: 'gentle', subscription_status: 'free', subscription_end_at: null },
     { id: '3', name: '박지민', phone: '010-1111-2222', goal: '자정까지 백엔드 API 명세서 초안 작성하기', deadline: '00:00', status: 'verified', mode: 'ruthless', subscription_status: 'active', subscription_end_at: '2026-02-15' },
+    { id: '4', name: '최강도', phone: '010-5555-6666', goal: '도전적인 10분 마감 목표!', deadline: new Date(Date.now() + 5 * 60000).getHours().toString().padStart(2, '0') + ':' + new Date(Date.now() + 5 * 60000).getMinutes().toString().padStart(2, '0'), status: 'in-progress', mode: 'ruthless', subscription_status: 'active', subscription_end_at: '2026-03-01' },
+    { id: '5', name: '정열정', phone: '010-7777-8888', goal: '1시간 내로 보고서 마무리', deadline: new Date(Date.now() + 45 * 60000).getHours().toString().padStart(2, '0') + ':' + new Date(Date.now() + 45 * 60000).getMinutes().toString().padStart(2, '0'), status: 'in-progress', mode: 'gentle', subscription_status: 'free', subscription_end_at: null },
 ]
 
 const INITIAL_TEMPLATES = [
@@ -49,15 +53,17 @@ const INITIAL_TEMPLATES = [
 ]
 
 export default function AdminDashboard() {
-    const [selectedUser, setSelectedUser] = useState<typeof DUMMY_USERS[0] | null>(null)
-    const [activeTab, setActiveTab] = useState<'all' | 'pending' | 'failed' | 'paid'>('all')
+    const [selectedUser, setSelectedUser] = useState<any>(null)
+    const [activeTab, setActiveTab] = useState<'all' | 'pending' | 'verified' | 'paid' | 'ruthless'>('all')
     const [message, setMessage] = useState("")
+    const [isRejecting, setIsRejecting] = useState(false)
     const [templates, setTemplates] = useState(INITIAL_TEMPLATES)
     const [isAddingTemplate, setIsAddingTemplate] = useState(false)
     const [newLabel, setNewLabel] = useState("")
     const [newText, setNewText] = useState("")
     const [stats, setStats] = useState({ visitors: 0 })
     const [isWeekend, setIsWeekend] = useState(false)
+    const [showMorningProtocol, setShowMorningProtocol] = useState(false)
 
     // Load templates and stats
     useEffect(() => {
@@ -111,11 +117,39 @@ export default function AdminDashboard() {
         return diffDays
     }
 
-    const filteredUsers = DUMMY_USERS.filter(user => {
-        if (activeTab === 'all') return true
-        if (activeTab === 'paid') return user.subscription_status === 'active'
-        return user.status === activeTab
-    })
+    const getTimeStatus = (deadline: string, status: string) => {
+        if (status === 'verified') return { level: 'safe', label: 'COMPLETED', color: 'text-accent' }
+
+        const [hours, minutes] = deadline.split(':').map(Number)
+        const now = new Date()
+        const target = new Date()
+        target.setHours(hours, minutes, 0, 0)
+
+        // 만약 자정(00:00)이라면 다음날로 설정
+        if (hours === 0) target.setDate(target.getDate() + 1)
+
+        const diffMinutes = Math.floor((target.getTime() - now.getTime()) / (1000 * 60))
+
+        if (diffMinutes < 0) return { level: 'failed', label: 'EXPIRED', color: 'text-red-500' }
+        if (diffMinutes <= 10) return { level: 'critical', label: 'URGENT (10M)', color: 'text-red-500 animate-pulse' }
+        if (diffMinutes <= 60) return { level: 'warning', label: 'CLOSING (1H)', color: 'text-yellow-500' }
+        if (diffMinutes <= 180) return { level: 'caution_3h', label: 'APPROACHING (3H)', color: 'text-orange-400' }
+        if (diffMinutes <= 360) return { level: 'alert_6h', label: 'MONITORING (6H)', color: 'text-blue-500' }
+        return { level: 'normal', label: 'IN-PROGRESS', color: 'text-blue-400' }
+    }
+
+    const filteredUsers = DUMMY_USERS
+        .filter(user => {
+            if (activeTab === 'all') return true
+            if (activeTab === 'paid') return user.subscription_status === 'active'
+            if (activeTab === 'ruthless') return user.mode === 'ruthless'
+            return user.status === activeTab
+        })
+        .sort((a, b) => {
+            if (a.status === 'verified' && b.status !== 'verified') return 1
+            if (a.status !== 'verified' && b.status === 'verified') return -1
+            return a.deadline.localeCompare(b.deadline)
+        })
 
     const generateWhatsAppLink = (phone: string, text: string) => {
         const formattedPhone = phone.replace(/-/g, '').replace(/^0/, '82')
@@ -144,21 +178,29 @@ export default function AdminDashboard() {
                             </div>
                         </div>
                     </div>
-                    <div className="flex gap-2">
-                        {['all', 'pending', 'failed', 'paid'].map((tab) => (
+                    <div className="flex gap-2 flex-wrap">
+                        {['all', 'pending', 'verified', 'paid', 'ruthless'].map((tab) => (
                             <button
                                 key={tab}
                                 onClick={() => setActiveTab(tab as any)}
                                 className={cn(
-                                    "px-3 py-1 text-[10px] font-black uppercase tracking-widest border border-border transition-colors",
+                                    "px-3 py-1 text-[10px] font-black uppercase tracking-widest border border-border transition-colors mb-1",
                                     activeTab === tab ? "bg-accent text-accent-foreground border-accent" : "text-foreground/40 hover:text-white",
-                                    tab === 'paid' && activeTab !== 'paid' && "text-yellow-500/60 border-yellow-500/20"
+                                    tab === 'paid' && activeTab !== 'paid' && "text-yellow-500/60 border-yellow-500/20",
+                                    tab === 'ruthless' && activeTab !== 'ruthless' && "text-red-500/60 border-red-500/20"
                                 )}
                             >
                                 {tab}
                             </button>
                         ))}
                     </div>
+
+                    <button
+                        onClick={() => setShowMorningProtocol(true)}
+                        className="w-full flex items-center justify-center gap-2 py-2 bg-accent/20 border-2 border-dashed border-accent text-accent text-[10px] font-black uppercase tracking-widest hover:bg-accent hover:text-accent-foreground transition-all animate-pulse"
+                    >
+                        <Sunrise size={14} /> Execute Sunrise Protocol
+                    </button>
                 </header>
 
                 <div className="flex-1 overflow-y-auto divide-y divide-border/50">
@@ -185,20 +227,15 @@ export default function AdminDashboard() {
                                     )}>
                                         {user.mode}
                                     </span>
-                                    {user.subscription_status === 'active' && user.subscription_end_at && getDaysRemaining(user.subscription_end_at)! <= 3 && (
-                                        <div className="flex items-center gap-1 text-[8px] font-black text-red-500 animate-pulse">
-                                            <AlertTriangle size={8} /> EXPIRING
-                                        </div>
-                                    )}
                                 </div>
                                 <p className="text-xs text-foreground/60 line-clamp-1">{user.goal}</p>
-                                <div className="flex items-center gap-3 text-[10px] font-bold text-foreground/40 uppercase tracking-widest">
-                                    <span className="flex items-center gap-1"><Clock size={10} /> {user.deadline}</span>
+                                <div className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-widest">
+                                    <span className="flex items-center gap-1 text-foreground/40"><Clock size={10} /> {user.deadline}</span>
                                     <span className={cn(
-                                        "flex items-center gap-1",
-                                        user.status === 'verified' ? "text-accent" : user.status === 'in-progress' ? "text-blue-400" : "text-yellow-500"
+                                        "flex items-center gap-1 font-black",
+                                        getTimeStatus(user.deadline, user.status).color
                                     )}>
-                                        {user.status}
+                                        {getTimeStatus(user.deadline, user.status).label}
                                     </span>
                                 </div>
                             </div>
@@ -250,17 +287,42 @@ export default function AdminDashboard() {
                                         >
                                             <ThumbsUp size={16} /> APPROVE
                                         </Button>
-                                        <Button
-                                            size="sm"
-                                            variant="outline"
-                                            className="border-red-600 text-red-600 hover:bg-red-600 hover:text-white flex gap-2"
-                                            onClick={() => {
-                                                setMessage("설정하신 목표가 너무 모호하거나 부적절합니다. 좀 더 도전적이고 구체적인 목표로 다시 설정해 주세요. (예: 물 마시기 X -> 보고서 작성 O)")
-                                                alert(`${selectedUser.name}님의 목표를 반려했습니다. 안내 메시지를 보내주세요.`)
-                                            }}
-                                        >
-                                            <ThumbsDown size={16} /> REJECT
-                                        </Button>
+                                        <div className="relative">
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                className="border-red-600 text-red-600 hover:bg-red-600 hover:text-white flex gap-2"
+                                                onClick={() => setIsRejecting(!isRejecting)}
+                                            >
+                                                <ThumbsDown size={16} /> REJECT
+                                            </Button>
+
+                                            {isRejecting && (
+                                                <div className="absolute top-full mt-2 right-0 w-64 bg-card border-2 border-red-600 p-2 z-[100] shadow-xl animate-in fade-in slide-in-from-top-2">
+                                                    <p className="text-[10px] font-black uppercase tracking-widest text-red-500 mb-2 px-2">반려 사유 선택</p>
+                                                    <div className="grid gap-1">
+                                                        {[
+                                                            { label: "목표 모호함", msg: "설정하신 목표가 너무 모호합니다. 좀 더 도전적이고 구체적인 목표로 다시 설정해 주세요. (예: 운동 X -> 스쿼트 100개 O)" },
+                                                            { label: "인증 부족", msg: "제출하신 인증샷으로는 목표 달성 여부를 확인하기 어렵습니다. 가이드라인에 맞춰 추가 증거를 제출해 주세요." },
+                                                            { label: "조작 의심", msg: "인증 파일의 조작이 의심되거나 시간이 맞지 않습니다. 정직하게 다시 인증해 주세요. (요정은 다 알고 있습니다.)" },
+                                                            { label: "내용 부실", msg: "목표 달성의 퀄리티가 현저히 낮습니다. 좀 더 성의 있는 결과물로 재인증이 필요합니다." }
+                                                        ].map((reason, i) => (
+                                                            <button
+                                                                key={i}
+                                                                className="text-left px-2 py-1.5 hover:bg-red-600/10 text-xs font-bold transition-colors"
+                                                                onClick={() => {
+                                                                    setMessage(reason.msg)
+                                                                    setIsRejecting(false)
+                                                                    alert(`${selectedUser.name}님의 목표/인증을 반려했습니다. 메시지를 확인하고 전송해 주세요.`)
+                                                                }}
+                                                            >
+                                                                {i + 1}. {reason.label}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 )}
                                 {isWeekend && (
@@ -282,18 +344,59 @@ export default function AdminDashboard() {
                                         {isWeekend ? <Sparkles size={20} className="text-accent" /> : <MessageSquare size={20} className="text-accent" />}
                                         {isWeekend ? "AI Mandate Suggested" : "Send Mandate"}
                                     </div>
-                                    <div className="flex gap-2">
-                                        {isWeekend && (
-                                            <div className="flex items-center gap-1 px-2 py-1 bg-white/5 border border-white/10 text-[9px] font-bold uppercase tracking-tighter text-foreground/40">
-                                                <Calendar size={10} /> Weekend Protocol
-                                            </div>
-                                        )}
-                                        <button
-                                            onClick={() => setIsAddingTemplate(!isAddingTemplate)}
-                                            className="text-[10px] font-black uppercase tracking-widest text-accent hover:text-white transition-colors flex items-center gap-1 border border-accent/20 px-2 py-1"
-                                        >
-                                            <Plus size={12} /> Add Template
-                                        </button>
+                                    <div className="flex items-center gap-3">
+                                        {/* 자동 추천 템플릿 버튼 */}
+                                        <div className="flex gap-1">
+                                            {(() => {
+                                                const status = getTimeStatus(selectedUser.deadline, selectedUser.status);
+                                                if (status.level === 'alert_6h') return (
+                                                    <button
+                                                        onClick={() => setMessage("마감 6시간 전입니다. 요정은 당신의 진행 상황을 조용히 지켜보고 있습니다. 아직 반환의 기회는 남아있습니다.")}
+                                                        className="px-2 py-1 bg-blue-600 text-white text-[9px] font-black"
+                                                    >
+                                                        T-6H ADVISORY
+                                                    </button>
+                                                )
+                                                if (status.level === 'caution_3h') return (
+                                                    <button
+                                                        onClick={() => setMessage("🚨 마감 3시간 전입니다. 이제부터는 수정이 불가능합니다. 오직 결과증명뿐입니다. 긴장하십시오.")}
+                                                        className="px-2 py-1 bg-orange-500 text-white text-[9px] font-black"
+                                                    >
+                                                        T-3H CAUTION
+                                                    </button>
+                                                )
+                                                if (status.level === 'warning') return (
+                                                    <button
+                                                        onClick={() => setMessage("🚨 마감 1시간 전입니다! 아직 인증이 없군요? 예치금이 벌써 반쯤 사라진 기분이지 않나요? 지금 즉시 결과를 증명해 주세요.")}
+                                                        className="px-2 py-1 bg-yellow-500 text-black text-[9px] font-black animate-bounce"
+                                                    >
+                                                        T-1H RECOMMEND
+                                                    </button>
+                                                )
+                                                if (status.level === 'critical') return (
+                                                    <button
+                                                        onClick={() => setMessage("🚨 마지막 10분! 지금 바로 결과를 증명하거나, 실패의 쓴맛을 볼 준비를 하세요. 더 이상의 자비는 없습니다.")}
+                                                        className="px-2 py-1 bg-red-600 text-white text-[9px] font-black animate-pulse"
+                                                    >
+                                                        T-10M URGENT
+                                                    </button>
+                                                )
+                                                return null;
+                                            })()}
+                                        </div>
+                                        <div className="flex gap-2">
+                                            {isWeekend && (
+                                                <div className="flex items-center gap-1 px-2 py-1 bg-white/5 border border-white/10 text-[9px] font-bold uppercase tracking-tighter text-foreground/40">
+                                                    <Calendar size={10} /> Weekend Protocol
+                                                </div>
+                                            )}
+                                            <button
+                                                onClick={() => setIsAddingTemplate(!isAddingTemplate)}
+                                                className="text-[10px] font-black uppercase tracking-widest text-accent hover:text-white transition-colors flex items-center gap-1 border border-accent/20 px-2 py-1"
+                                            >
+                                                <Plus size={12} /> Add Template
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -390,6 +493,30 @@ export default function AdminDashboard() {
                                     ))}
                                 </div>
                             </div>
+
+                            <div className="pt-8 border-t border-border/50 space-y-4">
+                                <div className="flex items-center gap-2 font-black uppercase tracking-tighter text-sm opacity-60">
+                                    <Zap size={14} className="text-accent" />
+                                    Upcoming Automation
+                                </div>
+                                <div className="space-y-2">
+                                    {[
+                                        { time: 'T-1h', label: 'CLOSING SOON MANDATE', status: 'pending' },
+                                        { time: 'T-10m', label: 'FINAL URGENT WARNING', status: 'pending' },
+                                        { time: 'T+1m', label: 'FAILURE EXECUTION', status: 'pending' },
+                                    ].map((task, i) => (
+                                        <div key={i} className="flex justify-between items-center p-3 border border-border/30 bg-white/5">
+                                            <div className="flex flex-col">
+                                                <span className="text-[10px] font-black text-accent">{task.time}</span>
+                                                <span className="text-[9px] font-bold opacity-60">{task.label}</span>
+                                            </div>
+                                            <span className="text-[8px] font-black px-1.5 py-0.5 bg-foreground/10 text-foreground/40 uppercase tracking-widest">
+                                                {task.status}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
                     </>
                 ) : (
@@ -404,6 +531,88 @@ export default function AdminDashboard() {
                     </div>
                 )}
             </main>
-        </div>
+
+            {/* Sunrise Protocol Modal */}
+            {showMorningProtocol && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+                    <div className="w-full max-w-2xl bg-card border-4 border-accent shadow-[0_0_50px_rgba(var(--accent-rgb),0.3)] animate-in zoom-in-95 duration-200">
+                        <div className="p-1 bg-accent flex justify-between items-center">
+                            <div className="flex items-center gap-2 px-3 py-1 text-accent-foreground">
+                                <Sunrise size={18} />
+                                <span className="text-xs font-black uppercase tracking-tighter">Emergency Sunrising: Goal Mandate</span>
+                            </div>
+                            <button
+                                onClick={() => setShowMorningProtocol(false)}
+                                className="p-1 hover:bg-black/20 text-accent-foreground transition-colors"
+                            >
+                                <XCircle size={20} />
+                            </button>
+                        </div>
+
+                        <div className="p-8 space-y-8">
+                            <div className="space-y-2">
+                                <h2 className="text-4xl font-black uppercase tracking-tighter leading-none">
+                                    Morning <span className="text-accent italic">Ruthless</span>
+                                </h2>
+                                <p className="text-xs font-bold text-foreground/40 uppercase tracking-widest leading-relaxed">
+                                    Following subjects have failed to report their daily objective. <br />
+                                    Immediate psychological pressure is required.
+                                </p>
+                            </div>
+
+                            <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                                {DUMMY_USERS.filter(u => u.status === 'pending').map((user) => (
+                                    <div key={user.id} className="flex items-center justify-between p-4 bg-white/5 border border-border/50 group hover:border-accent/50 transition-colors">
+                                        <div className="space-y-1">
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-black text-lg">{user.name}</span>
+                                                <span className="text-[10px] font-bold opacity-40">[{user.phone}]</span>
+                                            </div>
+                                            <p className="text-[10px] text-red-500 font-bold uppercase tracking-widest">STATUS: GHOSTING</p>
+                                        </div>
+                                        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <a
+                                                href={generateWhatsAppLink(user.phone, "좋은 아침입니다. 요정은 당신의 나태함을 기록하기 시작했습니다. 지금 즉시 오늘의 목표를 설정하지 않으면 오늘의 도전권이 박탈됩니다.")}
+                                                target="_blank"
+                                                className="px-3 py-1 bg-green-600 text-white text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-transform"
+                                            >
+                                                WhatsApp
+                                            </a>
+                                            <a
+                                                href={generateSMSLink(user.phone, "아직 목표가 등록되지 않았습니다. 예치금을 지키고 싶다면 지금 바로 로그인하여 목표를 설정하세요.")}
+                                                className="px-3 py-1 bg-accent text-accent-foreground text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-transform"
+                                            >
+                                                SMS
+                                            </a>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="pt-6 border-t border-border/50 flex flex-col items-center gap-4 text-center">
+                                <div className="flex items-center gap-2 text-accent font-black text-xs uppercase tracking-widest animate-pulse">
+                                    <AlertTriangle size={14} />
+                                    TOTAL {DUMMY_USERS.filter(u => u.status === 'pending').length} SUBJECTS DETECTED
+                                </div>
+                                <Button
+                                    className="w-full h-12 text-lg"
+                                    onClick={() => {
+                                        alert("모든 대상자에게 발송할 준비가 되었습니다. 리스트의 버튼을 차례대로 눌러주세요.")
+                                    }}
+                                >
+                                    ACKNOWLEDGE ALL SUBJECTS
+                                </Button>
+                                <button
+                                    onClick={() => setShowMorningProtocol(false)}
+                                    className="text-[10px] font-black uppercase tracking-widest opacity-40 hover:opacity-100 transition-opacity"
+                                >
+                                    Cancel Protocol
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div >
     )
 }

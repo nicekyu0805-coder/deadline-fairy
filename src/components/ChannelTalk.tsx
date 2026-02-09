@@ -5,11 +5,11 @@ import { useEffect } from "react"
 export function ChannelTalk() {
     useEffect(() => {
         const loadChannelTalk = () => {
-            var w = window as any
+            const w = window as any
             if (w.ChannelIO) {
                 return
             }
-            var ch: any = function () {
+            const ch: any = function () {
                 ch.c(arguments)
             }
             ch.q = []
@@ -22,11 +22,11 @@ export function ChannelTalk() {
                     return
                 }
                 w.ChannelIOInitialized = true
-                var s = document.createElement("script")
+                const s = document.createElement("script")
                 s.type = "text/javascript"
                 s.async = true
                 s.src = "https://cdn.channel.io/plugin/ch-plugin-web.js"
-                var x = document.getElementsByTagName("script")[0]
+                const x = document.getElementsByTagName("script")[0]
                 if (x.parentNode) {
                     x.parentNode.insertBefore(s, x)
                 }

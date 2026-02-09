@@ -11,8 +11,8 @@ export function PaymentForm({ amount }: { amount: number }) {
     const paymentWidgetRef = useRef<PaymentWidgetInstance | null>(null)
     const paymentMethodsWidgetRef = useRef<any>(null)
 
-    // 심사용 클라이언트 키 (토스 관리자 센터에서 확인 가능)
-    const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY || "test_ck_D5yaZDR7go7197M0Dga8VDR7go71"
+    // 심사용 클라이언트 키 (환경변수 미설정 시 에러 메시지 표시)
+    const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY || ""
     const customerKey = "df-customer-anonymous" // 비회원 또는 익명 키
 
     useEffect(() => {
@@ -29,7 +29,7 @@ export function PaymentForm({ amount }: { amount: number }) {
                 // 결제 수단 위젯 렌더링
                 const paymentMethodsWidget = paymentWidget.renderPaymentMethods(
                     "#payment-method",
-                    { 
+                    {
                         value: amount,
                         currency: "KRW",
                         country: "KR"

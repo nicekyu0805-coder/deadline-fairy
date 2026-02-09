@@ -16,10 +16,10 @@ export default function PrivacyPage() {
             <div className="space-y-8 text-foreground/80 leading-relaxed font-medium">
                 <section className="space-y-4">
                     <h2 className="text-2xl font-black uppercase tracking-tight text-white italic">1. 개인정보의 수집 및 이용 목적</h2>
-                    <p>마감 요정(이하 '회사')은 다음의 목적을 위하여 개인정보를 처리합니다. 처리하고 있는 개인정보는 다음의 목적 이외의 용도로는 이용되지 않으며, 이용 목적이 변경되는 경우에는 별도의 동의를 받는 등 필요한 조치를 이행할 예정입니다.</p>
+                    <p>마감 요정(이하 &apos;회사&apos;)은 다음의 목적을 위하여 개인정보를 처리합니다. 처리하고 있는 개인정보는 다음의 목적 이외의 용도로는 이용되지 않으며, 이용 목적이 변경되는 경우에는 별도의 동의를 받는 등 필요한 조치를 이행할 예정입니다.</p>
                     <ul className="list-disc pl-5 space-y-2">
                         <li>회원 가입 및 관리: 서비스 이용 의사 확인, 회원제 서비스 제공에 따른 본인 식별·인증, 회원자격 유지·관리 등</li>
-                        <li>서비스 제공: 마감 목표 모니터링, 알림 발송, 보상(환불) 처리 등</li>
+                        <li>서비스 제공: 마감 목표 모니터링, 알림 발송, 보상(예치금 반환) 처리 등</li>
                         <li>결제 및 정산: 서비스 요금 결제, 정산 처리, 금융거래 본인 인증 등</li>
                     </ul>
                 </section>
@@ -55,7 +55,7 @@ export default function PrivacyPage() {
             </div>
 
             <footer className="pt-12 border-t border-border text-[10px] font-bold uppercase tracking-widest text-foreground/40 text-center">
-                Last Updated: 2026. 01. 27.
+                Last Updated: 2026. 01. 30.
             </footer>
         </div>
     )
